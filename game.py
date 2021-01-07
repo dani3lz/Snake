@@ -50,6 +50,8 @@ def checkVolume(volume):
 
 def settingsInit():
     check = 0
+    volume = 0
+    top = 0
     with open("settings.txt", mode="r") as settingsFile:
         for row in settingsFile:
             for word in row.split():
@@ -57,17 +59,32 @@ def settingsInit():
                     for part in row.split():
                         check+=1
                         if check == 3:
-                            return float(part)
-    return 0
+                            check = 0
+                            volume = float(part)
+                if word == "Top":
+                    for part in row.split():
+                        check+=1
+                        if check == 3:
+                            check = 0
+                            top = int(part)
+    return volume, top
 
-def settingsCheck():
+def settingsCheck(top, volume):
     with open("settings.txt", mode="w+") as settingsFile:
-        settingsFile.writelines("Volume = " + str(volume))
+        settingsFile.writelines("Volume = " + str(volume) + "\n")
+        settingsFile.writelines("Top = " + str(top))
+
+def checkTop(score,top):
+    if score > top:
+        top = score
+    return top
+
+
 
 pygame.init()
 Height = 800
 Width = 1000
-volume = settingsInit()
+volume,top = settingsInit()
 displayOfGame = pygame.display.set_mode((Width,Height))
 nameOfDisplay = pygame.display.set_caption("Snake by dani3lz")
 programIcon = pygame.image.load("img//icon.png")
@@ -128,23 +145,29 @@ while run:
                     if volume < 1:
                         volume+= 0.1
                         volume = round(volume,1)
-                        settingsCheck()
                         pygame.mixer.music.set_volume(volume)
             elif (mouse[0] >= 935 and mouse[0] <= 965) and (mouse[1] >= 40 and mouse[1] <= 70):
                 if event.button == 1:
                     if volume > 0:
                         volume-= 0.1
                         volume = round(volume,1)
-                        settingsCheck()
                         pygame.mixer.music.set_volume(volume)
 
+    top = checkTop(scorePlayer, top)
+    settingsCheck(top, volume)
     directSaved = direct
+
+    displayOfGame.fill((0,0,0))
+
     scoreStr = "Score: " + str(scorePlayer)
     scoreText = font.render(scoreStr, (0,0,0), (255,255,255))
+    scoreTop = "Top: " + str(top)
+    topScore = fontsmall2.render(scoreTop, (0,0,0), (192,192,192))
+
     x,y = moveSnake(direct,x,y)
     snake.append((x,y))
     snake = snake[-lengthSnake:]
-    displayOfGame.fill((0,0,0))
+
     #BorderUp
     pygame.draw.rect(displayOfGame, (0,0,255),(0,Upper,Width,size))
     #BorderLeft
@@ -210,7 +233,8 @@ while run:
                         scorePlayer = 0
 
     if run:
-        displayOfGame.blit(scoreText, (30,10))
+        displayOfGame.blit(scoreText, (30,5))
+        displayOfGame.blit(topScore, (30,85))
         #VolumeInfo
         infoscale = "Volume: " + str(round(volume*100))
         volumeInfo = fontsmall2.render(infoscale, (0,0,0), (192,192,192))
