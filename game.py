@@ -79,8 +79,6 @@ def checkTop(score,top):
         top = score
     return top
 
-
-
 pygame.init()
 Height = 800
 Width = 1000
